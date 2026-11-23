@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+
 import {
   View,
   Text,
@@ -8,7 +9,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   FlatList,
+  Pressable,
 } from 'react-native';
+
+import { useRouter } from 'expo-router';
 
 import {
   getTrendingMovies,
@@ -17,6 +21,8 @@ import {
 } from '../../services/tmdb';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   const [trending, setTrending] = useState([]);
   const [popular, setPopular] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,18 +32,34 @@ export default function HomeScreen() {
   }, []);
 
   const loadMovies = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const trendingData = await getTrendingMovies();
-    const popularData = await getPopularMovies();
+      const [trendingData, popularData] = await Promise.all([
+        getTrendingMovies(),
+        getPopularMovies(),
+      ]);
 
-    setTrending(trendingData);
-    setPopular(popularData);
-    setLoading(false);
+      setTrending(trendingData || []);
+      setPopular(popularData || []);
+    } catch (error) {
+      console.log('Error loading movies:', error);
+      setTrending([]);
+      setPopular([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openMovie = (movieId) => {
+    router.push(`/movie/${movieId}`);
   };
 
   const renderMovie = ({ item }) => (
-    <View style={styles.movieCard}>
+    <Pressable
+      style={styles.movieCard}
+      onPress={() => openMovie(item.id)}
+    >
       <Image
         source={{
           uri: item.poster_path
@@ -60,7 +82,7 @@ export default function HomeScreen() {
           ? item.release_date.substring(0, 4)
           : 'Release date unavailable'}
       </Text>
-    </View>
+    </Pressable>
   );
 
   const renderSection = (title, movies) => (
@@ -73,14 +95,19 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.movieList}
       />
     </View>
   );
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
-        <Text style={styles.appName}>MOVIE DISCOVERY</Text>
+        <Text style={styles.appName}>THE POPCORN PROJECT</Text>
+
         <Text style={styles.tagline}>
           Discover your next favourite movie.
         </Text>
@@ -89,13 +116,16 @@ export default function HomeScreen() {
       {loading ? (
         <ActivityIndicator
           size="large"
-          color="#A855F7"
+          color="#8B1500"
           style={styles.loader}
         />
       ) : (
         <>
-          {renderSection('🔥 Trending This Week', trending)}
-          {renderSection('🎬 Popular Movies', popular)}
+          {trending.length > 0 &&
+            renderSection('🔥 Trending This Week', trending)}
+
+          {popular.length > 0 &&
+            renderSection('🎬 Popular Movies', popular)}
         </>
       )}
 
@@ -120,70 +150,89 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#101010',
   },
+
   header: {
     paddingTop: 55,
     paddingHorizontal: 20,
-    paddingBottom: 25,
+    paddingBottom: 30,
   },
+
   appName: {
-    color: '#A855F7',
-    fontSize: 25,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    color: '#8B1500',
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
+
   tagline: {
     color: '#BBBBBB',
     fontSize: 14,
-    marginTop: 8,
-  },
-  section: {
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginHorizontal: 20,
-    marginBottom: 15,
-  },
-  movieCard: {
-    width: 145,
-    marginLeft: 15,
-  },
-  poster: {
-    width: 145,
-    height: 215,
-    borderRadius: 10,
-    backgroundColor: '#252525',
-  },
-  movieTitle: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
     marginTop: 9,
   },
+
+  section: {
+    marginBottom: 32,
+  },
+
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 21,
+    fontWeight: 'bold',
+    marginHorizontal: 20,
+    marginBottom: 17,
+  },
+
+  movieList: {
+    paddingRight: 15,
+  },
+
+  movieCard: {
+    width: 155,
+    marginLeft: 15,
+  },
+
+  poster: {
+    width: 155,
+    height: 230,
+    borderRadius: 12,
+    backgroundColor: '#252525',
+  },
+
+  movieTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+    marginTop: 10,
+    minHeight: 38,
+  },
+
   rating: {
     color: '#FACC15',
-    fontSize: 13,
+    fontSize: 14,
     marginTop: 5,
   },
+
   year: {
     color: '#999999',
-    fontSize: 12,
-    marginTop: 3,
+    fontSize: 13,
+    marginTop: 4,
   },
+
   loader: {
     marginTop: 100,
   },
+
   errorText: {
     color: '#FF7777',
     textAlign: 'center',
     margin: 25,
   },
+
   footer: {
-    padding: 20,
+    padding: 22,
     alignItems: 'center',
   },
+
   footerText: {
     color: '#777777',
     fontSize: 11,

@@ -7,12 +7,10 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 
 import { useRouter, useFocusEffect } from 'expo-router';
-
 import { signOut } from 'firebase/auth';
 
 import { auth } from '../../services/firebase';
@@ -73,7 +71,10 @@ export default function ProfileScreen() {
               await signOut(auth);
               router.replace('/login');
             } catch (error) {
-              Alert.alert('Error', 'Unable to log out. Please try again.');
+              Alert.alert(
+                'Error',
+                'Unable to log out. Please try again.'
+              );
             }
           },
         },
@@ -96,7 +97,11 @@ export default function ProfileScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      <Text style={styles.topLabel}>THE POPCORN PROJECT</Text>
       <Text style={styles.heading}>My Profile</Text>
+      <Text style={styles.subtitle}>
+        Your movie journey, all in one place.
+      </Text>
 
       <View style={styles.profileCard}>
         <View style={styles.avatar}>
@@ -111,24 +116,31 @@ export default function ProfileScreen() {
           {user?.email || 'No email available'}
         </Text>
 
-        <Text style={styles.memberText}>
-          🎬 Movie Discovery Member
-        </Text>
+        <View style={styles.memberBadge}>
+          <Text style={styles.memberText}>
+            🎬  Movie Lover
+          </Text>
+        </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Your Activity</Text>
+      <Text style={styles.sectionTitle}>YOUR ACTIVITY</Text>
 
       <View style={styles.statsCard}>
-        <Text style={styles.statNumber}>
-          {loading ? '...' : watchlistCount}
-        </Text>
+        <View style={styles.statIcon}>
+          <Text style={styles.statEmoji}>🍿</Text>
+        </View>
 
-        <Text style={styles.statLabel}>
-          Movies in your Watchlist
-        </Text>
+        <View style={styles.statInfo}>
+          <Text style={styles.statNumber}>
+            {loading ? '...' : watchlistCount}
+          </Text>
+          <Text style={styles.statLabel}>
+            Movies in your Watchlist
+          </Text>
+        </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Account Information</Text>
+      <Text style={styles.sectionTitle}>ACCOUNT INFORMATION</Text>
 
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
@@ -150,13 +162,16 @@ export default function ProfileScreen() {
         <View style={styles.separator} />
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Account</Text>
-          <Text style={styles.infoValue}>Active</Text>
+          <Text style={styles.infoLabel}>Account status</Text>
+          <Text style={styles.activeValue}>● Active</Text>
         </View>
       </View>
 
       <Pressable
-        style={styles.logoutButton}
+        style={({ pressed }) => [
+          styles.logoutButton,
+          pressed && styles.buttonPressed,
+        ]}
         onPress={handleLogout}
       >
         <Text style={styles.logoutText}>
@@ -165,7 +180,7 @@ export default function ProfileScreen() {
       </Pressable>
 
       <Text style={styles.footer}>
-        Movie Discovery App
+        THE POPCORN PROJECT
       </Text>
 
       <Text style={styles.version}>
@@ -183,29 +198,45 @@ const styles = StyleSheet.create({
   content: {
     padding: 22,
     paddingTop: 55,
-    paddingBottom: 40,
+    paddingBottom: 45,
+  },
+  topLabel: {
+    color: '#8B1500',
+    fontSize: 11,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    marginBottom: 9,
   },
   heading: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 25,
+  },
+  subtitle: {
+    color: '#A3A3A3',
+    fontSize: 14,
+    marginTop: 7,
+    marginBottom: 27,
   },
   profileCard: {
-    backgroundColor: '#202020',
-    borderRadius: 18,
-    padding: 25,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 20,
+    padding: 27,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: '#303030',
   },
   avatar: {
-    width: 85,
-    height: 85,
-    borderRadius: 50,
-    backgroundColor: '#9333EA',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#8B1500',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 17,
+    borderWidth: 3,
+    borderColor: '#A83220',
   },
   avatarText: {
     color: '#FFFFFF',
@@ -218,52 +249,80 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   email: {
-    color: '#AAAAAA',
+    color: '#A3A3A3',
     fontSize: 14,
     marginTop: 7,
   },
+  memberBadge: {
+    backgroundColor: '#35150F',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 17,
+  },
   memberText: {
-    color: '#C084FC',
-    marginTop: 15,
-    fontSize: 14,
+    color: '#E5A092',
+    fontSize: 13,
+    fontWeight: '600',
   },
   sectionTitle: {
-    color: '#A855F7',
-    fontSize: 19,
+    color: '#B83A27',
+    fontSize: 13,
     fontWeight: 'bold',
+    letterSpacing: 1.3,
     marginBottom: 14,
   },
   statsCard: {
-    backgroundColor: '#202020',
-    borderRadius: 15,
-    padding: 22,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    padding: 21,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: '#303030',
+  },
+  statIcon: {
+    width: 55,
+    height: 55,
+    borderRadius: 15,
+    backgroundColor: '#35150F',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 17,
+  },
+  statEmoji: {
+    fontSize: 27,
+  },
+  statInfo: {
+    flex: 1,
   },
   statNumber: {
     color: '#FFFFFF',
-    fontSize: 36,
+    fontSize: 30,
     fontWeight: 'bold',
   },
   statLabel: {
-    color: '#AAAAAA',
-    fontSize: 14,
-    marginTop: 5,
+    color: '#A3A3A3',
+    fontSize: 13,
+    marginTop: 3,
   },
   infoCard: {
-    backgroundColor: '#202020',
-    borderRadius: 15,
-    padding: 18,
-    marginBottom: 28,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: '#303030',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 17,
   },
   infoLabel: {
-    color: '#AAAAAA',
+    color: '#A3A3A3',
     fontSize: 14,
   },
   infoValue: {
@@ -273,32 +332,41 @@ const styles = StyleSheet.create({
     maxWidth: '65%',
     textAlign: 'right',
   },
+  activeValue: {
+    color: '#65C98B',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   separator: {
     height: 1,
     backgroundColor: '#333333',
   },
   logoutButton: {
-    backgroundColor: '#9333EA',
+    backgroundColor: '#8B1500',
     padding: 17,
-    borderRadius: 12,
+    borderRadius: 13,
     alignItems: 'center',
+  },
+  buttonPressed: {
+    opacity: 0.75,
   },
   logoutText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   footer: {
-    color: '#A855F7',
-    fontSize: 15,
+    color: '#8B1500',
+    fontSize: 13,
     textAlign: 'center',
-    marginTop: 30,
+    marginTop: 32,
     fontWeight: 'bold',
+    letterSpacing: 2,
   },
   version: {
     color: '#777777',
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 7,
+    marginTop: 8,
   },
 });

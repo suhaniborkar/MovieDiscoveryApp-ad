@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "scheme": "moviediscovery",
     "ios": {
       "supportsTablet": true
@@ -22,18 +22,18 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "splash": {
-     "image": "./assets/splash-icon.png",
-     "resizeMode": "contain",
-     "backgroundColor": "#8B1500"
-      },
-
     "plugins": [
       "expo-router",
       "expo-status-bar",
       "expo-font",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#8B1500",
+          "image": "./assets/icon.png",
+          "imageWidth": 200
+        }
+      ]
     ]
-    
   }
 }

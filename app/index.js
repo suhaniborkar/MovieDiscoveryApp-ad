@@ -21,7 +21,7 @@ export default function Index() {
   if (checking) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#A855F7" />
+        <ActivityIndicator size="large" color="#8B1500" />
       </View>
     );
   }

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+
 import {
   View,
   Text,
@@ -8,11 +9,17 @@ import {
   Pressable,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Image,
 } from 'react-native';
+
 import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
+
 import { auth } from '../services/firebase';
 import { useRouter, Link } from 'expo-router';
 
@@ -58,109 +65,228 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join MovieDiscovery</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        placeholderTextColor="#999"
-        value={name}
-        onChangeText={setName}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email Address"
-        placeholderTextColor="#999"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#999"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <Pressable
-        style={styles.button}
-        onPress={handleRegister}
-        disabled={loading}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
       >
-        {loading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text style={styles.buttonText}>Register</Text>
-        )}
-      </Pressable>
+        {/* Logo and Branding */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-      <View style={styles.loginRow}>
-        <Text style={styles.loginText}>Already have an account? </Text>
-        <Link href="/login" style={styles.link}>
-          Login
-        </Link>
-      </View>
-    </View>
+          <Text style={styles.appName}>THE POPCORN PROJECT</Text>
+
+          <View style={styles.redLine} />
+
+          <Text style={styles.tagline}>
+            Discover your next favourite movie.
+          </Text>
+        </View>
+
+        {/* Registration Form */}
+        <View style={styles.formContainer}>
+          <Text style={styles.heading}>Create Account</Text>
+
+          <Text style={styles.subtitle}>
+            Join us and start exploring!
+          </Text>
+
+          <Text style={styles.label}>Full Name</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your full name"
+            placeholderTextColor="#777"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
+
+          <Text style={styles.label}>Email Address</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email"
+            placeholderTextColor="#777"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <Text style={styles.label}>Password</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Create a password (min. 6 characters)"
+            placeholderTextColor="#777"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+
+          <Pressable
+            style={styles.registerButton}
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.registerButtonText}>
+                CREATE ACCOUNT
+              </Text>
+            )}
+          </Pressable>
+
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>
+              Already have an account?{' '}
+            </Text>
+
+            <Link href="/login" style={styles.loginLink}>
+              Login
+            </Link>
+          </View>
+        </View>
+
+        <Text style={styles.footer}>
+          DISCOVER. WATCH. REPEAT.
+        </Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F1A',
+    backgroundColor: '#101010',
+  },
+
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
-    padding: 25,
+    paddingHorizontal: 25,
+    paddingVertical: 35,
   },
-  title: {
+
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+
+  logo: {
+    width: 110,
+    height: 110,
+    marginBottom: 15,
+  },
+
+  appName: {
     color: '#FFFFFF',
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: 'bold',
+    letterSpacing: 1.5,
     textAlign: 'center',
   },
+
+  redLine: {
+    width: 55,
+    height: 4,
+    backgroundColor: '#8B1500',
+    borderRadius: 5,
+    marginTop: 12,
+    marginBottom: 12,
+  },
+
+  tagline: {
+    color: '#A3A3A3',
+    fontSize: 13,
+  },
+
+  formContainer: {
+    backgroundColor: '#1E1E1E',
+    padding: 25,
+    borderRadius: 18,
+  },
+
+  heading: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+
   subtitle: {
-    color: '#C084FC',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 35,
-    marginTop: 8,
+    color: '#A3A3A3',
+    fontSize: 13,
+    marginBottom: 25,
   },
+
+  label: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 9,
+  },
+
   input: {
-    backgroundColor: '#1E1E2E',
+    backgroundColor: '#292929',
     color: '#FFFFFF',
     padding: 15,
     borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
+    fontSize: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: '#383838',
   },
-  button: {
-    backgroundColor: '#9333EA',
+
+  registerButton: {
+    backgroundColor: '#8B1500',
     padding: 16,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 5,
   },
-  buttonText: {
+
+  registerButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: 'bold',
+    letterSpacing: 1,
   },
-  loginRow: {
+
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 25,
+    flexWrap: 'wrap',
   },
+
   loginText: {
-    color: '#FFFFFF',
+    color: '#A3A3A3',
+    fontSize: 13,
   },
-  link: {
-    color: '#C084FC',
+
+  loginLink: {
+    color: '#E04B35',
+    fontSize: 13,
     fontWeight: 'bold',
+  },
+
+  footer: {
+    color: '#666666',
+    fontSize: 11,
+    letterSpacing: 2,
+    textAlign: 'center',
+    marginTop: 30,
   },
 });

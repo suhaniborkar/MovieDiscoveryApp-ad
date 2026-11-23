@@ -17,78 +17,125 @@ import { searchMovies, IMAGE_BASE_URL } from '../../services/tmdb';
 
 export default function SearchScreen() {
   const router = useRouter();
+
   const [query, setQuery] = useState('');
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   const handleSearch = async () => {
     if (!query.trim()) {
       setMovies([]);
+      setSearched(false);
       return;
     }
 
-    setLoading(true);
-    const results = await searchMovies(query.trim());
-    setMovies(results);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setSearched(true);
+
+      const results = await searchMovies(query.trim());
+      setMovies(results || []);
+    } catch (error) {
+      console.log('Search error:', error);
+      setMovies([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const renderMovie = ({ item }) => (
+    <Pressable
+      style={styles.movieCard}
+      onPress={() => router.push(`/movie/${item.id}`)}
+    >
+      <Image
+        source={{
+          uri: item.poster_path
+            ? `${IMAGE_BASE_URL}${item.poster_path}`
+            : 'https://placehold.co/300x450/222222/FFFFFF?text=No+Poster',
+        }}
+        style={styles.poster}
+      />
+
+      <Text style={styles.movieTitle} numberOfLines={2}>
+        {item.title}
+      </Text>
+
+      <Text style={styles.rating}>
+        ⭐ {item.vote_average?.toFixed(1) || 'N/A'}
+      </Text>
+
+      <Text style={styles.year}>
+        {item.release_date
+          ? item.release_date.substring(0, 4)
+          : 'Release date unavailable'}
+      </Text>
+    </Pressable>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Search Movies</Text>
+      <View style={styles.header}>
+        <Text style={styles.heading}>Find Your Movie</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Search for a movie..."
-        placeholderTextColor="#888"
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={handleSearch}
-        returnKeyType="search"
-      />
+        <Text style={styles.subtitle}>
+          Search thousands of movies and discover your next favourite.
+        </Text>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSearch}>
-        <Text style={styles.buttonText}>Search</Text>
+      <View style={styles.searchBox}>
+        <TextInput
+          style={styles.input}
+          placeholder="Search for a movie..."
+          placeholderTextColor="#888888"
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={handleSearch}
+          returnKeyType="search"
+        />
+      </View>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleSearch}
+        disabled={loading}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? 'Searching...' : 'Search Movies'}
+        </Text>
       </TouchableOpacity>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#A855F7" />
+        <ActivityIndicator
+          size="large"
+          color="#8B1500"
+          style={styles.loader}
+        />
       ) : (
         <FlatList
           data={movies}
           keyExtractor={(item) => item.id.toString()}
+          renderItem={renderMovie}
           numColumns={2}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.results}
+          columnWrapperStyle={styles.row}
+          ListHeaderComponent={
+            movies.length > 0 ? (
+              <Text style={styles.resultHeading}>
+                Search Results ({movies.length})
+              </Text>
+            ) : null
+          }
           ListEmptyComponent={
             <Text style={styles.empty}>
-              Search for your favourite movies!
+              {searched
+                ? 'No movies found. Try another search!'
+                : '🍿 Search for your favourite movies!'}
             </Text>
           }
-          
-        renderItem={({ item }) => (
-           <Pressable
-           style={styles.movieCard}
-         onPress={() => router.push(`/movie/${item.id}`)}
-         >
-         <Image
-         source={{
-         uri: item.poster_path
-          ? `${IMAGE_BASE_URL}${item.poster_path}`
-          : 'https://placehold.co/300x450/222222/FFFFFF?text=No+Poster',
-         }}
-          style={styles.poster}
-         />
-
-         <Text style={styles.movieTitle} numberOfLines={2}>
-         {item.title}
-          </Text>
-
-         <Text style={styles.rating}>
-         ⭐ {item.vote_average?.toFixed(1) || 'N/A'}
-         </Text>
-         </Pressable>
-    )}
-
         />
       )}
     </View>
@@ -100,60 +147,112 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#101010',
     paddingTop: 55,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
   },
+
+  header: {
+    marginBottom: 24,
+  },
+
   heading: {
-    color: '#A855F7',
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#8B1500',
+    fontSize: 27,
+    fontWeight: '900',
   },
+
+  subtitle: {
+    color: '#AAAAAA',
+    fontSize: 14,
+    marginTop: 8,
+    lineHeight: 21,
+  },
+
+  searchBox: {
+    backgroundColor: '#1E1E1E',
+    borderWidth: 1,
+    borderColor: '#383838',
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+
   input: {
-    backgroundColor: '#252525',
     color: '#FFFFFF',
-    padding: 14,
-    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 15,
   },
+
   button: {
-    backgroundColor: '#A855F7',
-    padding: 14,
-    borderRadius: 10,
+    backgroundColor: '#8B1500',
+    padding: 15,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 12,
     marginBottom: 20,
   },
+
   buttonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 15,
   },
+
   results: {
-    paddingBottom: 25,
+    paddingBottom: 30,
+    flexGrow: 1,
   },
+
+  row: {
+    justifyContent: 'space-between',
+  },
+
+  resultHeading: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+
   movieCard: {
-    flex: 1,
-    margin: 7,
-    maxWidth: '48%',
+    width: '48%',
+    marginBottom: 22,
   },
+
   poster: {
     width: '100%',
-    height: 220,
-    borderRadius: 10,
+    height: 235,
+    borderRadius: 12,
     backgroundColor: '#252525',
   },
+
   movieTitle: {
     color: '#FFFFFF',
     fontWeight: '600',
-    marginTop: 8,
+    fontSize: 14,
+    marginTop: 9,
+    minHeight: 36,
   },
+
   rating: {
     color: '#FACC15',
-    marginTop: 4,
+    marginTop: 5,
+    fontSize: 13,
   },
+
+  year: {
+    color: '#999999',
+    marginTop: 4,
+    fontSize: 12,
+  },
+
+  loader: {
+    marginTop: 50,
+  },
+
   empty: {
     color: '#AAAAAA',
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 55,
+    fontSize: 15,
+    lineHeight: 23,
   },
 });
